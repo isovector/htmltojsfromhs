@@ -17,7 +17,6 @@ import qualified Data.Map as M
 
 makeBaseFunctor ''TagTree
 
--- TODO(sandy): bullshit. make these better later
 data Element = Element { getElementName  :: String }
              | Text    { getTextContents :: String }
 
@@ -168,11 +167,13 @@ makeHtml = cataA $ \case
   TagLeafF (TagText text) -> do
     return $ Text text
 
+  TagLeafF a  ->  error $ show a
+
 
 shouldIgnoreAttr :: String -> Bool
 shouldIgnoreAttr "class"    = True
 shouldIgnoreAttr "uniqueId" = True
-shouldIgnoreAttr _          = False
+shouldIgnoreAttr a = isPrefixOf "xmlns:" a
 
 
 parseComponentTag :: String -> DoStuff (Maybe (PkgNamespace, String))
@@ -215,7 +216,7 @@ getTheStateBro _ = error "you fucked the shit dawg"
 
 main :: IO ()
 main = do
-  let tree = parseTree "<html xmlns:sandy=\"bigdog\"><sandy:maguire id=\"travis\" uniqueId=\"haskellCool\">hi travis</sandy:maguire></html>"
+  let tree = parseTree "<html xmlns:component=\"bigdog\"><component:maguire id=\"travis\" uniqueId=\"haskellCool\">hi travis</component:maguire></html>"
 
   flip evalStateT (getTheStateBro tree)
      $ traverse_ makeHtml
