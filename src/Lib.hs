@@ -1,5 +1,4 @@
 {-# LANGUAGE DeriveTraversable #-}
-{-# LANGUAGE KindSignatures    #-}
 {-# LANGUAGE LambdaCase        #-}
 {-# LANGUAGE TemplateHaskell   #-}
 {-# LANGUAGE TypeFamilies      #-}
@@ -72,7 +71,7 @@ instantiateComponent pkg comp uniq = do
 
   case uniq of
     Nothing -> pure ()
-    Just u -> do
+    Just u ->
       lift $ putStrLn $
         concat
           [ "this._"
@@ -164,8 +163,7 @@ makeHtml = cataA $ \case
 
     return my_el
 
-  TagLeafF (TagText text) -> do
-    return $ Text text
+  TagLeafF (TagText text) -> return $ Text text
 
   TagLeafF a  ->  error $ show a
 
@@ -173,13 +171,13 @@ makeHtml = cataA $ \case
 shouldIgnoreAttr :: String -> Bool
 shouldIgnoreAttr "class"    = True
 shouldIgnoreAttr "uniqueId" = True
-shouldIgnoreAttr a = isPrefixOf "xmlns:" a
+shouldIgnoreAttr a = "xmlns:" `isPrefixOf` a
 
 
 parseComponentTag :: String -> DoStuff (Maybe (PkgNamespace, String))
-parseComponentTag str = do
+parseComponentTag str =
   case break (== ':') str of
-    (_, "") -> pure $ Nothing
+    (_, "") -> pure Nothing
     (pkg, _ : comp) -> do
       pkgns <- parsePkgNamespace pkg
       return $ Just (pkgns, comp)
@@ -219,6 +217,4 @@ main = do
   let tree = parseTree "<html xmlns:component=\"bigdog\"><component:maguire id=\"travis\" uniqueId=\"haskellCool\">hi travis</component:maguire></html>"
 
   flip evalStateT (getTheStateBro tree)
-     $ traverse_ makeHtml
-     $ tree
-
+     $ traverse_ makeHtml tree
